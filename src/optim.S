@@ -36,10 +36,10 @@ do_block:
     addq $BLOCK_SIZE, %r10 # line loop upper bound index
 
 __line_loop:
-    
+
     movq %rcx, %r11   # element loop indexer
     subq $4, %r11
-    
+
 __element_loop:
 
     movq %r8, %rax
@@ -50,7 +50,7 @@ __element_loop:
 __unroll_loop:
 
     movq %r9, %r13
-    imulq %rcx, %r13 
+    imulq %rcx, %r13
     addq %rax, %r13  # C array indexer
     imulq $4, %r13
 
@@ -71,8 +71,8 @@ __unroll_loop:
     vmovapd 32(%rdi, %r14, 8), %ymm2
     vmovapd 32(%rsi, %r15, 8), %ymm3
 
-    vfmadd231pd %ymm0, %ymm1, (%rdx, %r13, 8)    
-    vfmadd231pd %ymm2, %ymm3, 32(%rdx, %r13, 8)
+    # vfmadd231pd %ymm0, %ymm1, (%rdx, %r13, 8)    
+    # vfmadd231pd %ymm2, %ymm3, 32(%rdx, %r13, 8)
 
     addq $UNROLL, %rax
     cmpq %rax, %r12
