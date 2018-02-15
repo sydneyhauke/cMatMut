@@ -18,9 +18,10 @@ int matrix_init(matrix_t *mat, uint32_t m, uint32_t n);
 void matrix_free(matrix_t *mat);
 
 /* Matrix operation functions */
-int matrix_add(const matrix_t *A, const matrix_t *B, matrix_t *C); 
-int matrix_multiply(const matrix_t *A, const matrix_t *B, matrix_t *C);
-int matrix_multiply_norm(const matrix_t *A, const matrix_t *B, matrix_t *C);
+int matrix_add(const matrix_t *A, const matrix_t *B, matrix_t *C);
+int matrix_multiply_st(const matrix_t *A, const matrix_t *B, matrix_t *C);
+int matrix_multiply_mt(const matrix_t *A, const matrix_t *B, matrix_t *C);
+int matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C);
 
 int matrix_compare(const matrix_t *A, const matrix_t *B, double epsilon);
 

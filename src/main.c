@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
+#include <string.h>
 
 #include "matrix.h"
 #include "io.h"
 
 #define NSEC_PER_SEC 1000000000
-#define MAT_SIZE 1024ul
+
+typedef int (*matrix_mult_fct)(const matrix_t *, const matrix_t *, matrix_t *);
 
 void time_diff(const struct timespec start,
                const struct timespec end,
@@ -29,13 +31,38 @@ int main(int argc, char *argv[])
     matrix_t B;
     matrix_t C;
 
-    fp1 = fopen(argv[1], "r");
+    matrix_mult_fct matrix_multiply;
+
+    if(argc < 4) {
+      fputs("Not enough arguments\n", stderr);
+      return EXIT_FAILURE;
+    }
+
+    fputs("Begin ", stdout);
+    if(strcmp(argv[1], "-m") == 0) {
+      /* Set to multi-threaded computation */
+      matrix_multiply = matrix_multiply_mt;
+      fputs("multi threaded ", stdout);
+    }
+    else if(strcmp(argv[1], "-o") == 0) {
+      /* Set to OpenCL computation */
+      matrix_multiply = matrix_multiply_cl;
+      fputs("OpenCL ", stdout);
+    }
+    else {
+      /* Set to single threaded computation */
+      matrix_multiply = matrix_multiply_st;
+      fputs("single threaded ", stdout);
+    }
+    fputs("computation\n", stdout);
+
+    fp1 = fopen(argv[2], "r");
     if(fp1 == NULL) {
       perror("Error while opening file of matrix A");
       return EXIT_FAILURE;
     }
 
-    fp2 = fopen(argv[2], "r");
+    fp2 = fopen(argv[3], "r");
     if(fp2 == NULL) {
       perror("Error while opening file of matrix B");
       return EXIT_FAILURE;
@@ -75,7 +102,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    matrix_multiply_norm(&A, &B, &C);
+    matrix_multiply(&A, &B, &C);
 
     if(clock_gettime(CLOCK_MONOTONIC, &end) == -1) {
         fprintf(stderr, "couldn't get clock\n");
@@ -104,7 +131,7 @@ int main(int argc, char *argv[])
     matrix_t C_norm;
     matrix_init(&C_norm, A.m, B.n);
 
-    matrix_multiply_norm(&A, &B, &C_norm);
+    matrix_multiply_st(&A, &B, &C_norm);
 
     if(matrix_compare(&C, &C_norm, 0.000000001)) {
         printf("\nMatrices are different !\n");

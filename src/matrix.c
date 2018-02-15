@@ -18,8 +18,8 @@ typedef struct matmut_arg_t {
 
 extern void do_block(const double *A, const double *B, double *C, uint32_t n, uint32_t x, uint32_t y);
 
-int 
-matrix_init(matrix_t *mat, uint32_t m, uint32_t n) 
+int
+matrix_init(matrix_t *mat, uint32_t m, uint32_t n)
 {
     mat->unaligned_matrix_ptr = calloc(sizeof(double), m*n);
 
@@ -50,14 +50,14 @@ matrix_init(matrix_t *mat, uint32_t m, uint32_t n)
     return 0;
 }
 
-void 
-matrix_free(matrix_t *mat) 
+void
+matrix_free(matrix_t *mat)
 {
     free(mat->unaligned_matrix_ptr);
 }
 
-int 
-matrix_add(const matrix_t *A, const matrix_t *B, matrix_t *C) 
+int
+matrix_add(const matrix_t *A, const matrix_t *B, matrix_t *C)
 {
     return -1;
 }
@@ -77,8 +77,8 @@ int matrix_compare(const matrix_t *A, const matrix_t *B, double epsilon)
     return 0;
 }
 
-/*static inline void 
-do_block(const double *A, const double *B, double *C, uint32_t n, uint32_t x, uint32_t y) 
+/*static inline void
+do_block(const double *A, const double *B, double *C, uint32_t n, uint32_t x, uint32_t y)
 {
     // Iterate on y, line by line
     for(uint32_t j = y*BLOCK_SIZE; j < (y+1)*BLOCK_SIZE; j++) {
@@ -118,8 +118,8 @@ start_handler(void* args)
     return NULL;
 }
 
-int 
-matrix_multiply(const matrix_t *A, const matrix_t *B, matrix_t *C) 
+int
+matrix_multiply_mt(const matrix_t *A, const matrix_t *B, matrix_t *C)
 {
     if(A->n != B->m) {
         return -1;
@@ -141,7 +141,7 @@ matrix_multiply(const matrix_t *A, const matrix_t *B, matrix_t *C)
 }
 
 int
-matrix_multiply_norm(const matrix_t *A, const matrix_t *B, matrix_t *C)
+matrix_multiply_st(const matrix_t *A, const matrix_t *B, matrix_t *C)
 {
     if(A->n != B->m) {
         return -1;
@@ -158,4 +158,12 @@ matrix_multiply_norm(const matrix_t *A, const matrix_t *B, matrix_t *C)
     }
 
     return 0;
+}
+
+int
+matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
+{
+  // TODO : implementation
+
+  return 0;
 }
