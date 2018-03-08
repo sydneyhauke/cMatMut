@@ -102,7 +102,9 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    matrix_multiply(&A, &B, &C);
+    if(matrix_multiply(&A, &B, &C) < 0) {
+      return EXIT_FAILURE;
+    }
 
     if(clock_gettime(CLOCK_MONOTONIC, &end) == -1) {
         fprintf(stderr, "couldn't get clock\n");

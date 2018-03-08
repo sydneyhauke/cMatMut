@@ -7,8 +7,8 @@
 typedef struct matrix_t matrix_t;
 
 struct matrix_t {
-    double *unaligned_matrix_ptr;
-    double *matrix;
+    float *unaligned_matrix_ptr;
+    float *matrix;
     uint32_t m;
     uint32_t n;
 };
@@ -23,6 +23,9 @@ int matrix_multiply_st(const matrix_t *A, const matrix_t *B, matrix_t *C);
 int matrix_multiply_mt(const matrix_t *A, const matrix_t *B, matrix_t *C);
 int matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C);
 
-int matrix_compare(const matrix_t *A, const matrix_t *B, double epsilon);
+int matrix_compare(const matrix_t *A, const matrix_t *B, float epsilon);
+
+/* OpenCL kernel source file */
+#define MATMUT_KERNEL_FILE "src/matmut.cl"
 
 #endif

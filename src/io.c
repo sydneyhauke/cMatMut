@@ -29,7 +29,7 @@ int read_matrix(FILE *fp, matrix_t *mat)
   /* Then read each matrix element one by one */
   for(size_t y = 0; y < n; y++) {
     for(size_t x = 0; x < n; x++) {
-      ret = fscanf(fp, "%lf*[ ]", &(mat->matrix[y*n + x]));
+      ret = fscanf(fp, "%f*[ ]", &(mat->matrix[y*n + x]));
 
       if(ret < 1) {
         perror("Error while reading matrix element");
@@ -67,14 +67,14 @@ int write_matrix(FILE *fp, const matrix_t *mat)
   /* Then write each matrix element one by one */
   for(size_t y = 0; y < mat->n; y++) {
     for(size_t x = 0; x < mat->m - 1; x++) {
-      ret = fprintf(fp, "%lf ", mat->matrix[y * n + x]);
+      ret = fprintf(fp, "%f ", mat->matrix[y * n + x]);
       if(ret < 0) {
         perror("Error while writing matrix element");
         return -1;
       }
     }
 
-    ret = fprintf(fp, "%lf\n", mat->matrix[y * n + m - 1]);
+    ret = fprintf(fp, "%f\n", mat->matrix[y * n + m - 1]);
     if(ret < 0) {
       perror("Error while writing last element in line");
       return -1;

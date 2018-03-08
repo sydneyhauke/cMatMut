@@ -1,7 +1,7 @@
 CC=gcc
 
-CFLAGS= -Wall -O2
-LDFLAGS= -pthread -lm
+CFLAGS= -Wall -O2 -g
+LDFLAGS= -pthread -lm -lOpenCL
 
 EXEC=matmut
 BUILD_DIR=build
@@ -17,7 +17,7 @@ all: $(EXEC)
 $(EXEC): $(OBJ)
 	$(CC) -o $(BUILD_DIR)/$@ $^ $(LDFLAGS)
 
-$(SRC_DIR)/optim.o: 
+$(SRC_DIR)/optim.o:
 	$(AS) -g -o $@ $(SRC_DIR)/optim.S
 
 $(SRC_DIR)/%.o: %.c
@@ -28,4 +28,3 @@ clean:
 
 mrproper: clean
 	rm -rf $(BUILD_DIR)/*
-
