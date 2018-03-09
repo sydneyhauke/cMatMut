@@ -165,8 +165,6 @@ matrix_multiply_st(const matrix_t *A, const matrix_t *B, matrix_t *C)
 int
 matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
 {
-  cl_int ciErrNum;
-
   const cl_int hA = A->m;
   const cl_int wA = A->n;
   const cl_int hB = B->m;
@@ -174,12 +172,71 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
   const cl_int hC = C->m;
   const cl_int wC = C->n;
 
-  cl_platform_id platform;
-  clGetPlatformIDs(1, &platform, NULL);
-
+  cl_uint num_platforms;
+  cl_platform_id *platforms;
   cl_device_id device;
+  cl_int cl_err;
+
+  /* Determine number of available OpenCL platforms */
+  cl_err = clGetPlatformIDs(0, NULL, &num_platforms);
+  if(cl_err != CL_SUCCESS) {
+      fprintf(stderr, "Couldn't determine number of available OpenCL platforms");
+      exit(EXIT_FAILURE);
+  }
+
+  /* Get all available OpenCL platforms */
+  platforms = malloc(sizeof(cl_platform_id)*num_platforms);
+  if(platforms == NULL) {
+      perror("Error while allocating memory for platorms data structure");
+      exit(EXIT_FAILURE);
+  }
+
+  cl_err = clGetPlatformIDs(num_platforms, platforms, NULL);
+  if(cl_err != CL_SUCCESS) {
+      fprintf(stderr, "Couldn't get all available OpenCL platforms");
+      exit(EXIT_FAILURE);
+  }
+
+  /* Choose one OpenCL platform */
+  printf("Available platforms:\n\n");
+
+  char *platform_info;
+  for(cl_uint i = 0; i < num_platforms; i++) {
+      size_t platform_info_size;
+      cl_err = clGetPlatformInfo(platforms[i],
+                                 CL_PLATFORM_NAME,
+                                 0,
+                                 NULL,
+                                 &platform_info_size);
+
+      platform_info = malloc(platform_info_size);
+      if(platform_info == NULL) {
+          perror("Error while allocating memory for platform infos");
+          exit(EXIT_FAILURE);
+      }
+
+      cl_err = clGetPlatformInfo(platforms[i],
+                                CL_PLATFORM_NAME,
+                                platform_info_size,
+                                platform_info,
+                                NULL);
+
+      printf("[%u] ", i);
+      if(cl_err != CL_SUCCESS) {
+          printf("NULL\n");
+      }
+      else {
+          printf("%s\n", platform_info);
+      }
+
+      free(platform_info);
+  }
+
+  // TODO : let the user choose an OpenCL platform
+
+  /* Choose one OpenCL device */
   clGetDeviceIDs(
-    platform,
+    platforms[1],
     CL_DEVICE_TYPE_ALL,
     1,
     &device,
@@ -188,7 +245,7 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
 
   cl_context_properties cps[3] = {
     CL_CONTEXT_PLATFORM,
-    (cl_context_properties)platform,
+    (cl_context_properties)platforms[1],
     0
   };
 
@@ -198,14 +255,14 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
     &device,
     NULL,
     NULL,
-    &ciErrNum
+    &cl_err
   );
 
   cl_command_queue queue = clCreateCommandQueue(
     ctx,
     device,
     0,
-    &ciErrNum
+    &cl_err
   );
 
   cl_mem bufferA = clCreateBuffer(
@@ -213,7 +270,7 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
     CL_MEM_READ_ONLY,
     A->m * A->n * sizeof(float),
     NULL,
-    &ciErrNum
+    &cl_err
   );
 
   clEnqueueWriteBuffer(
@@ -233,7 +290,7 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
     CL_MEM_READ_ONLY,
     B->m * B->n * sizeof(float),
     NULL,
-    &ciErrNum
+    &cl_err
   );
 
   clEnqueueWriteBuffer(
@@ -253,7 +310,7 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
     CL_MEM_WRITE_ONLY,
     A->m * B->n * sizeof(float),
     NULL,
-    &ciErrNum
+    &cl_err
   );
 
   FILE* kernelFp = fopen(MATMUT_KERNEL_FILE, "r");
@@ -289,15 +346,15 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
     1,
     (const char**)&kernelSource,
     NULL,
-    &ciErrNum
+    &cl_err
   );
 
-  ciErrNum = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+  cl_err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
 
   cl_kernel matmut_kernel = clCreateKernel(
     program,
     "matmut",
-    &ciErrNum
+    &cl_err
   );
 
   clSetKernelArg(matmut_kernel, 0, sizeof(cl_mem), (void*)&bufferA);
@@ -311,7 +368,7 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
   size_t localws[2] = {2, 2};
   size_t globalws[2] = {wC, hC};
 
-  ciErrNum = clEnqueueNDRangeKernel(
+  cl_err = clEnqueueNDRangeKernel(
     queue,
     matmut_kernel,
     2,
@@ -323,7 +380,7 @@ matrix_multiply_cl(const matrix_t *A, const matrix_t *B, matrix_t *C)
     NULL
   );
 
-  ciErrNum = clEnqueueReadBuffer(
+  cl_err = clEnqueueReadBuffer(
     queue,
     bufferC,
     CL_TRUE,
